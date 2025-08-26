@@ -1,0 +1,135 @@
+---
+description: "Refactor shadcn-admin into SupaStack and enforce conventions"
+patterns: "*"
+---
+
+# SupaStack Project Rules
+
+This project is based on [shadcn-admin](https://github.com/satnaing/shadcn-admin) but rebranded and refactored as **SupaStack**.
+Cursor should always follow these rules when generating or refactoring code.
+
+## Project Identity
+- Rename all mentions of `shadcn-admin` → `supastack`
+- Branding: **SupaStack** (instead of Shadcn Admin)
+- Package name: `@supastack/app`
+- Env prefix: `SUPASTACK_`
+- Repo branch: `main`
+- Commit convention: Conventional Commits
+
+## Tech Stack (from package.json)
+- Framework: **React 19 + Vite 7 + TypeScript 5**
+- UI: Tailwind CSS 4 + @tailwindcss/vite + shadcn/ui (Radix primitives)
+- Icons: lucide-react
+- Charts: recharts
+- Tables: TanStack Table v8
+- Forms & validation: react-hook-form + zod + @hookform/resolvers
+- API/data fetching: axios + TanStack React Query v5
+- Routing: TanStack React Router v1
+- State management: zustand (only when needed)
+- Auth: @clerk/clerk-react (replaceable with NextAuth if needed)
+- Date handling: date-fns + react-day-picker
+- UI utilities: clsx, tailwind-merge, class-variance-authority
+- Loading & feedback: sonner, react-top-loading-bar
+- Animations: tw-animate-css
+
+### Dev & Quality Tooling
+- Bundler: Vite 7 + @vitejs/plugin-react-swc
+- Linting: eslint 9 + eslint-plugin-react-hooks + eslint-plugin-react-refresh + @tanstack/eslint-plugin-query
+- Formatting: prettier + prettier-plugin-tailwindcss + @trivago/prettier-plugin-sort-imports
+- Type checking: typescript 5 + types/node + types/react + types/react-dom
+- Testing & Fixtures: vitest (add), @faker-js/faker
+- Dead code check: knip
+
+## Folder Structure
+- `src/app/(auth)` — sign-in, sign-up
+- `src/app/(dashboard)` — protected area
+- `src/app/catalog` — service catalog
+- `src/app/admin` — admin pages
+- `src/components/ui` — shadcn/ui components
+- `src/components/forms` — form components
+- `src/lib` — utilities (auth, db, rbac, telemetry)
+- `src/server/api` — data fetching, query/router handlers
+- `src/server/db` — prisma client & seed (if added)
+- `prisma` — schema + migrations (optional if using Prisma)
+- `tests` — unit/e2e tests
+
+## UI Components
+This project uses `@shadcn/ui` components stored in `src/components/ui`.
+
+Example import:
+```tsx
+import { Button } from "@/components/ui/button"
+import { Card, CardHeader, CardTitle } from "@/components/ui/card"
+```
+
+To add new components:
+```bash
+npx shadcn@latest add [component-name]
+```
+
+## Routing
+- `/` → redirect to `/catalog` (if authenticated) or `/login`
+- `/login` — Google or Clerk auth
+- `/catalog` — list entities
+- `/catalog/new` — create entity
+- `/catalog/[id]` — entity details
+- `/admin/users` — manage users & roles
+
+## Security & RBAC
+- Roles: `OWNER`, `ADMIN`, `MEMBER`
+- OWNER → full access
+- ADMIN → manage catalog & relations
+- MEMBER → read-only
+- All queries must be tenant-scoped
+- Never allow cross-tenant access
+
+## Database Models (Optional with Prisma)
+- User(id, email, name, image?)
+- Tenant(id, name)
+- UserTenantMembership(userId, tenantId, role)
+- Entity(id, tenantId, kind, name, slug, data JSONB)
+- Relation(id, tenantId, fromId, toId, type)
+
+## API Contracts
+- `GET /api/catalog` → list entities
+- `POST /api/catalog` → create entity
+- `GET /api/catalog/:id` → fetch entity
+- `DELETE /api/catalog/:id` → delete entity
+- `POST /api/relations` → create relation
+- `GET /api/relations?entityId=...` → list relations
+
+## Development Standards
+- TypeScript strict mode
+- All API inputs/outputs validated with zod
+- Always return `{ error: { code, message } }` on failure
+- UI must include loading, empty, and error states
+- Accessibility: all interactive elements must be keyboard-accessible
+
+## Env & Secrets
+Required variables:
+- `DATABASE_URL`
+- `SUPASTACK_NEXTAUTH_SECRET` or Clerk env vars
+- `SUPASTACK_GOOGLE_CLIENT_ID`
+- `SUPASTACK_GOOGLE_CLIENT_SECRET`
+- `SUPASTACK_APP_URL`
+
+## Commands
+```bash
+yarn dev        # run locally
+yarn build      # build for prod
+yarn start      # start prod server
+yarn lint       # lint code
+yarn test       # run tests
+yarn format     # prettier
+```
+
+## Pull Request Checklist
+- [ ] Update .cursorrules if conventions change
+- [ ] All queries tenant-scoped
+- [ ] RBAC checks enforced
+- [ ] zod validation added
+- [ ] UI: empty/loading/error states present
+- [ ] Accessibility validated
+
+---
+This ensures **SupaStack** evolves cleanly, following the actual stack defined in `package.json`.
