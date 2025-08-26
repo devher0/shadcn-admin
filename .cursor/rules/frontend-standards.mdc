@@ -1,0 +1,294 @@
+---
+description: Frontend Components and API Validation Standards
+globs: 
+alwaysApply: false
+---
+# Frontend Components and API Validation Standards
+
+### When working in components directory:
+
+**1. Always use Tailwind for styling**
+- Use Tailwind utility classes for all styling
+- Avoid custom CSS unless absolutely necessary
+- Use Tailwind's design system tokens (colors, spacing, etc.)
+- Leverage Tailwind's responsive utilities
+
+```typescript
+// ✅ Good - Using Tailwind classes
+<div className="flex items-center justify-between p-4 bg-white rounded-lg shadow-sm border border-gray-200 hover:shadow-md transition-shadow">
+  <h2 className="text-lg font-semibold text-gray-900">Component Title</h2>
+  <button className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:ring-2 focus:ring-blue-500">
+    Action
+  </button>
+</div>
+
+// ❌ Bad - Using custom CSS
+<div style={{ display: 'flex', padding: '16px', backgroundColor: 'white' }}>
+  <h2 style={{ fontSize: '18px', fontWeight: 'bold' }}>Component Title</h2>
+</div>
+```
+
+**2. Use Framer Motion for animations**
+- Import motion components from 'framer-motion'
+- Use predefined animation variants when possible
+- Implement smooth transitions and micro-interactions
+- Follow accessibility guidelines for animations
+
+```typescript
+// ✅ Good - Using Framer Motion
+import { motion } from 'framer-motion'
+
+const variants = {
+  hidden: { opacity: 0, y: 20 },
+  visible: { opacity: 1, y: 0 }
+}
+
+<motion.div
+  initial="hidden"
+  animate="visible"
+  variants={variants}
+  transition={{ duration: 0.3 }}
+  className="p-4 bg-white rounded-lg"
+>
+  Content
+</motion.div>
+
+// ❌ Bad - Using CSS animations
+<div className="animate-fade-in">Content</div>
+```
+
+**3. Follow component naming conventions**
+- Use PascalCase for component names
+- Use descriptive, semantic names
+- Include component type in name (Button, Card, Modal, etc.)
+- Use consistent file naming (ComponentName.tsx)
+
+```typescript
+// ✅ Good - Proper naming
+export function UserProfileCard() { }
+export function SettingsModal() { }
+export function NavigationMenu() { }
+
+// ❌ Bad - Poor naming
+export function userCard() { }
+export function modal() { }
+export function nav() { }
+```
+
+### Component Structure Guidelines
+
+```typescript
+// ✅ Standard component structure
+import { useState, useEffect } from 'react'
+import { motion } from 'framer-motion'
+import { Button } from '@/components/ui/button'
+import { Card } from '@/components/ui/card'
+
+interface ComponentNameProps {
+  title: string
+  onAction?: () => void
+  className?: string
+}
+
+export function ComponentName({ 
+  title, 
+  onAction, 
+  className 
+}: ComponentNameProps) {
+  const [state, setState] = useState(false)
+
+  useEffect(() => {
+    // Side effects
+  }, [])
+
+  return (
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      className={`p-4 ${className}`}
+    >
+      <Card className="p-6">
+        <h2 className="text-xl font-semibold mb-4">{title}</h2>
+        <Button onClick={onAction} className="bg-blue-600 hover:bg-blue-700">
+          Action
+        </Button>
+      </Card>
+    </motion.div>
+  )
+}
+```
+
+## API Validation Standards
+
+### In API directory:
+
+**1. Use zod for all validation**
+- Import zod schemas for request/response validation
+- Define comprehensive validation rules
+- Use descriptive error messages
+- Validate both input and output data
+
+```typescript
+// ✅ Good - Using zod for validation
+import { z } from 'zod'
+
+const UserSchema = z.object({
+  id: z.string().uuid(),
+  email: z.string().email('Invalid email format'),
+  name: z.string().min(1, 'Name is required').max(100, 'Name too long'),
+  age: z.number().int().positive().optional(),
+  role: z.enum(['admin', 'user', 'moderator'])
+})
+
+const CreateUserRequestSchema = UserSchema.omit({ id: true })
+const UpdateUserRequestSchema = UserSchema.partial()
+
+// ❌ Bad - No validation
+function createUser(data: any) {
+  // No validation
+  return api.post('/users', data)
+}
+```
+
+**2. Define return types with zod schemas**
+- Create separate schemas for API responses
+- Use zod's transform methods for data formatting
+- Include error response schemas
+- Document schema purposes with comments
+
+```typescript
+// ✅ Good - Comprehensive response schemas
+const UserResponseSchema = UserSchema.extend({
+  createdAt: z.string().datetime(),
+  updatedAt: z.string().datetime(),
+  profile: z.object({
+    avatar: z.string().url().optional(),
+    bio: z.string().max(500).optional()
+  }).optional()
+})
+
+const UsersListResponseSchema = z.object({
+  users: z.array(UserResponseSchema),
+  pagination: z.object({
+    page: z.number().int().positive(),
+    limit: z.number().int().positive(),
+    total: z.number().int().nonnegative(),
+    totalPages: z.number().int().positive()
+  })
+})
+
+const ErrorResponseSchema = z.object({
+  error: z.string(),
+  message: z.string(),
+  statusCode: z.number().int().positive(),
+  timestamp: z.string().datetime()
+})
+```
+
+**3. Export types generated from schemas**
+- Use zod's infer utility for TypeScript types
+- Export both schemas and inferred types
+- Keep schemas and types in sync automatically
+- Use consistent naming conventions
+
+```typescript
+// ✅ Good - Exporting inferred types
+export const UserSchema = z.object({
+  id: z.string().uuid(),
+  email: z.string().email(),
+  name: z.string().min(1).max(100),
+  role: z.enum(['admin', 'user', 'moderator'])
+})
+
+export type User = z.infer<typeof UserSchema>
+export type CreateUserRequest = z.infer<typeof CreateUserRequestSchema>
+export type UpdateUserRequest = z.infer<typeof UpdateUserRequestSchema>
+export type UserResponse = z.infer<typeof UserResponseSchema>
+export type UsersListResponse = z.infer<typeof UsersListResponseSchema>
+export type ErrorResponse = z.infer<typeof ErrorResponseSchema>
+
+// ❌ Bad - Manual type definitions
+export interface User {
+  id: string
+  email: string
+  name: string
+  role: string
+}
+```
+
+### API Service Structure
+
+```typescript
+// ✅ Standard API service structure
+import { z } from 'zod'
+import axios from 'axios'
+
+// Schemas
+const UserSchema = z.object({
+  id: z.string().uuid(),
+  email: z.string().email(),
+  name: z.string().min(1).max(100)
+})
+
+const CreateUserSchema = UserSchema.omit({ id: true })
+const UserResponseSchema = UserSchema.extend({
+  createdAt: z.string().datetime(),
+  updatedAt: z.string().datetime()
+})
+
+// Types
+export type User = z.infer<typeof UserSchema>
+export type CreateUserRequest = z.infer<typeof CreateUserSchema>
+export type UserResponse = z.infer<typeof UserResponseSchema>
+
+// API functions
+export async function createUser(data: CreateUserRequest): Promise<UserResponse> {
+  // Validate input
+  const validatedData = CreateUserSchema.parse(data)
+  
+  const response = await axios.post('/api/users', validatedData)
+  
+  // Validate response
+  return UserResponseSchema.parse(response.data)
+}
+
+export async function getUser(id: string): Promise<UserResponse> {
+  const response = await axios.get(`/api/users/${id}`)
+  return UserResponseSchema.parse(response.data)
+}
+```
+
+### Error Handling
+
+```typescript
+// ✅ Good - Proper error handling with zod
+import { z } from 'zod'
+
+export async function validateAndProcess(data: unknown) {
+  try {
+    const validatedData = UserSchema.parse(data)
+    return await processUser(validatedData)
+  } catch (error) {
+    if (error instanceof z.ZodError) {
+      // Handle validation errors
+      const errors = error.errors.map(err => ({
+        field: err.path.join('.'),
+        message: err.message
+      }))
+      throw new ValidationError('Invalid user data', errors)
+    }
+    throw error
+  }
+}
+
+class ValidationError extends Error {
+  constructor(message: string, public errors: Array<{ field: string; message: string }>) {
+    super(message)
+    this.name = 'ValidationError'
+  }
+}
+```
+description:
+globs:
+alwaysApply: false
+---
