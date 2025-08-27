@@ -1,7 +1,5 @@
 ---
-description: Frontend Components and API Validation Standards
-globs: 
-alwaysApply: false
+alwaysApply: true
 ---
 # Frontend Components and API Validation Standards
 

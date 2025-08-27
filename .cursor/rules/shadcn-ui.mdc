@@ -1,8 +1,6 @@
 ---
-description: "Use shadcn/ui components as needed for any UI code"
-patterns: "*.tsx"
+alwaysApply: true
 ---
-
 # Shadcn UI Components
 
 This project uses @shadcn/ui for UI components. These are beautifully designed, accessible components that you can copy and paste into your apps.
