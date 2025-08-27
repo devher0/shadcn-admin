@@ -105,29 +105,25 @@ health.registerLiveness('app', async () => {
 
 health.registerLiveness('memory', async () => {
   logger.debug('Running memory liveness check')
-  // Simulate memory check
-  const memoryUsage = process.memoryUsage?.() || { heapUsed: 0 }
-  const isHealthy = memoryUsage.heapUsed < 100 * 1024 * 1024 // 100MB limit
+  // Simulate memory check - in browser we can't access process.memoryUsage
+  const isHealthy = true // Always healthy in browser environment
   return isHealthy
 })
 
 health.registerReadiness('database', async () => {
   logger.debug('Running database readiness check')
   try {
-    // Simulate database connection check
-    await new Promise(resolve => setTimeout(resolve, 50))
-    const isHealthy = Math.random() > 0.1 // 90% success rate
-    if (!isHealthy) {
-      logger.warn('Database readiness check failed')
-    }
-    return isHealthy
+    // Real database connection check
+    const { prisma } = await import('@/lib/database/client')
+    await prisma.$queryRaw`SELECT 1`
+    return true
   } catch (error) {
-    logger.error('Database readiness check error', { 
+    logger.error('Database readiness check failed', { 
       error: error instanceof Error ? error.message : 'Unknown error' 
     })
     return false
   }
-})
+}, 5000) // 5 second timeout
 
 health.registerReadiness('redis', async () => {
   logger.debug('Running redis readiness check')

@@ -3,6 +3,8 @@
 import * as _0_0 from "//Users/nick/Projects/ops8/shadcn-admin/src/api/healthz.ts";
 import * as _0_1 from "//Users/nick/Projects/ops8/shadcn-admin/src/api/metrics.ts";
 import * as _0_2 from "//Users/nick/Projects/ops8/shadcn-admin/src/api/readyz.ts";
+import * as _0_3 from "//Users/nick/Projects/ops8/shadcn-admin/src/api/user-profiles.ts";
+import * as _0_4 from "//Users/nick/Projects/ops8/shadcn-admin/src/api/user-settings.ts";
 
 
 export const routeBase = "/api";
@@ -151,6 +153,102 @@ const internal  = [
         path       : "/api/readyz",
         url        : "/api/readyz",
         cb         : _0_2.DELETE,
+      },
+  _0_3.default && {
+        source     : "src/api/user-profiles.ts?fn=default",
+        method     : "use",
+        route      : "/user-profiles",
+        path       : "/api/user-profiles",
+        url        : "/api/user-profiles",
+        cb         : _0_3.default,
+      },
+  _0_3.GET && {
+        source     : "src/api/user-profiles.ts?fn=GET",
+        method     : "get",
+        route      : "/user-profiles",
+        path       : "/api/user-profiles",
+        url        : "/api/user-profiles",
+        cb         : _0_3.GET,
+      },
+  _0_3.PUT && {
+        source     : "src/api/user-profiles.ts?fn=PUT",
+        method     : "put",
+        route      : "/user-profiles",
+        path       : "/api/user-profiles",
+        url        : "/api/user-profiles",
+        cb         : _0_3.PUT,
+      },
+  _0_3.POST && {
+        source     : "src/api/user-profiles.ts?fn=POST",
+        method     : "post",
+        route      : "/user-profiles",
+        path       : "/api/user-profiles",
+        url        : "/api/user-profiles",
+        cb         : _0_3.POST,
+      },
+  _0_3.PATCH && {
+        source     : "src/api/user-profiles.ts?fn=PATCH",
+        method     : "patch",
+        route      : "/user-profiles",
+        path       : "/api/user-profiles",
+        url        : "/api/user-profiles",
+        cb         : _0_3.PATCH,
+      },
+  _0_3.DELETE && {
+        source     : "src/api/user-profiles.ts?fn=DELETE",
+        method     : "delete",
+        route      : "/user-profiles",
+        path       : "/api/user-profiles",
+        url        : "/api/user-profiles",
+        cb         : _0_3.DELETE,
+      },
+  _0_4.default && {
+        source     : "src/api/user-settings.ts?fn=default",
+        method     : "use",
+        route      : "/user-settings",
+        path       : "/api/user-settings",
+        url        : "/api/user-settings",
+        cb         : _0_4.default,
+      },
+  _0_4.GET && {
+        source     : "src/api/user-settings.ts?fn=GET",
+        method     : "get",
+        route      : "/user-settings",
+        path       : "/api/user-settings",
+        url        : "/api/user-settings",
+        cb         : _0_4.GET,
+      },
+  _0_4.PUT && {
+        source     : "src/api/user-settings.ts?fn=PUT",
+        method     : "put",
+        route      : "/user-settings",
+        path       : "/api/user-settings",
+        url        : "/api/user-settings",
+        cb         : _0_4.PUT,
+      },
+  _0_4.POST && {
+        source     : "src/api/user-settings.ts?fn=POST",
+        method     : "post",
+        route      : "/user-settings",
+        path       : "/api/user-settings",
+        url        : "/api/user-settings",
+        cb         : _0_4.POST,
+      },
+  _0_4.PATCH && {
+        source     : "src/api/user-settings.ts?fn=PATCH",
+        method     : "patch",
+        route      : "/user-settings",
+        path       : "/api/user-settings",
+        url        : "/api/user-settings",
+        cb         : _0_4.PATCH,
+      },
+  _0_4.DELETE && {
+        source     : "src/api/user-settings.ts?fn=DELETE",
+        method     : "delete",
+        route      : "/user-settings",
+        path       : "/api/user-settings",
+        url        : "/api/user-settings",
+        cb         : _0_4.DELETE,
       }
 ].filter(it => it);
 

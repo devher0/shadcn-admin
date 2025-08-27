@@ -1,0 +1,47 @@
+---
+alwaysApply: true
+---
+
+rules:
+  - name: "Auth with Clerk"
+    description: |
+      В проекте используется Clerk как внешний сервис аутентификации.
+      Clerk хранит всех пользователей и управляет логином/паролями/SSO/MFA.
+      В локальной базе (Postgres через Prisma) хранится только бизнес-логика:
+      профиль, роли, связи с заказами и т.п.
+    guidelines:
+      - Никогда не хранить пароль или email напрямую в базе.
+      - Основной идентификатор пользователя в базе — `clerkUserId` (string, unique).
+      - При первом входе пользователя создавать запись в таблице `UserProfile` с полем `clerkUserId`.
+      - Если запись уже существует — использовать её.
+      - Все связи (orders, projects, etc.) должны ссылаться на `UserProfile` через `clerkUserId`.
+      - Для запросов на бэкенде использовать Clerk SDK (например `getAuth(req)`) для получения `userId`.
+
+  - name: "Prisma models"
+    description: |
+      База данных управляется Prisma. В ней нет отдельной таблицы `User` для аутентификации.
+      Вместо этого есть `UserProfile` с внешним ключом `clerkUserId`.
+    example: |
+      model UserProfile {
+        id           String   @id @default(cuid())
+        clerkUserId  String   @unique
+        displayName  String?
+        role         String   @default("USER")
+        createdAt    DateTime @default(now())
+        updatedAt    DateTime @updatedAt
+      }
+
+  - name: "Integration"
+    description: |
+      При создании API-эндпоинтов или middleware:
+      - Извлекать текущего пользователя через Clerk SDK.
+      - Проверять, есть ли запись в `UserProfile`.
+      - Если нет — автоматически создавать.
+      - Никогда не пытаться валидировать пароль/email вручную.
+      - Все операции сессий и логина происходят через Clerk.
+
+  - name: "Do not override"
+    description: |
+      Не генерировать свой auth-service, не использовать bcrypt/jwt напрямую.
+      Вся аутентификация полностью на Clerk.
+ия полностью на Clerk.

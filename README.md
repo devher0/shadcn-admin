@@ -1,6 +1,6 @@
-# Shadcn Admin Dashboard
+# SupaStack
 
-Admin Dashboard UI crafted with Shadcn and Vite. Built with responsiveness and accessibility in mind.
+Modern admin dashboard built with React, Vite, and Clerk authentication. Features comprehensive user management, health monitoring, and scalable architecture.
 
 ![alt text](public/images/shadcn-admin.png)
 
@@ -61,47 +61,62 @@ If you want to update components using the Shadcn CLI (e.g., `npx shadcn@latest 
 
 ## Tech Stack
 
-**UI:** [ShadcnUI](https://ui.shadcn.com) (TailwindCSS + RadixUI)
+**Frontend:** React 19 + Vite 7 + TypeScript 5
 
-**Build Tool:** [Vite](https://vitejs.dev/)
+**UI:** [ShadcnUI](https://ui.shadcn.com) (TailwindCSS + RadixUI)
 
 **Routing:** [TanStack Router](https://tanstack.com/router/latest)
 
-**Type Checking:** [TypeScript](https://www.typescriptlang.org/)
+**State Management:** Zustand + TanStack Query
 
-**Linting/Formatting:** [Eslint](https://eslint.org/) & [Prettier](https://prettier.io/)
+**Authentication:** [Clerk](https://clerk.com) (complete integration)
 
-**Icons:** [Lucide Icons](https://lucide.dev/icons/), [Tabler Icons](https://tabler.io/icons) (Brand icons only)
+**Database:** PostgreSQL + Prisma ORM
 
-**Auth (partial):** [Clerk](https://go.clerk.com/GttUAaK)
+**Logging & Monitoring:** Structured JSON logging, Prometheus metrics, health checks
 
-**Logging & Monitoring:** Custom structured logging, metrics collection, and health checks
+**Forms & Validation:** React Hook Form + Zod
 
-## Run Locally
+**Charts:** Recharts
 
-Clone the project
+**Tables:** TanStack Table v8
 
+## Quick Start
+
+### Prerequisites
+- Node.js 18+
+- pnpm
+- Supabase account (for database)
+- Clerk account (for authentication)
+
+### Setup
+
+1. **Clone and install**
 ```bash
-  git clone https://github.com/satnaing/shadcn-admin.git
+git clone https://github.com/your-org/supastack.git
+cd supastack
+pnpm install
 ```
 
-Go to the project directory
-
+2. **Configure environment**
 ```bash
-  cd shadcn-admin
+cp .env.example .env.local
+# Edit .env.local with your Supabase and Clerk credentials
 ```
 
-Install dependencies
-
+3. **Setup database**
 ```bash
-  pnpm install
+pnpm run db:generate
+pnpm run db:push
+pnpm run db:seed
 ```
 
-Start the server
-
+4. **Start development**
 ```bash
-  pnpm run dev
+pnpm run dev:health
 ```
+
+Visit `http://localhost:5173` to see the application.
 
 ## Health Checks & Monitoring
 
@@ -153,6 +168,31 @@ curl -X POST http://localhost:3001/restore-healthy
 ```
 
 For detailed documentation, see [HEALTH_CHECKS.md](HEALTH_CHECKS.md).
+
+## Database & Authentication
+
+### SupaStack Integration
+- **Clerk Authentication**: Complete user management and authentication
+- **Prisma ORM**: Type-safe database operations
+- **UserProfile Model**: Links Clerk users to application data
+- **RBAC**: Role-based access control with tenant isolation
+
+### API Endpoints
+- `GET /api/user-profiles` - Get current user profile
+- `PUT /api/user-profiles` - Update user profile
+- `GET /api/user-settings` - Get user settings
+- `PUT /api/user-settings` - Update user settings
+
+### Database Commands
+```bash
+pnpm run db:generate    # Generate Prisma client
+pnpm run db:push        # Push schema to database
+pnpm run db:migrate     # Create and apply migrations
+pnpm run db:seed        # Seed database with sample data
+pnpm run db:studio      # Open Prisma Studio
+```
+
+For detailed integration guide, see [SUPASTACK_INTEGRATION.md](SUPASTACK_INTEGRATION.md).
 
 ## Logging and Monitoring
 

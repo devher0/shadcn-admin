@@ -3,7 +3,7 @@ export { logger, createLogger } from './logging'
 export type { Logger, LogContext, LogEntry } from './logging'
 
 // Export metrics module
-export { metrics, httpMiddleware, router as metricsRouter } from './metrics'
+export { metrics } from './metrics'
 export type { MetricLabels, MetricValue } from './metrics'
 
 // Export health module

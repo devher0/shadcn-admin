@@ -3,7 +3,6 @@ import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react-swc'
 import tailwindcss from '@tailwindcss/vite'
 import { tanstackRouter } from '@tanstack/router-plugin/vite'
-import api from 'vite-plugin-api'
 
 // https://vite.dev/config/
 export default defineConfig({
@@ -14,7 +13,6 @@ export default defineConfig({
     }),
     react(),
     tailwindcss(),
-    api(),
   ],
   resolve: {
     alias: {
@@ -32,6 +30,10 @@ export default defineConfig({
         changeOrigin: true,
       },
       '/metrics': {
+        target: 'http://localhost:3001',
+        changeOrigin: true,
+      },
+      '/api': {
         target: 'http://localhost:3001',
         changeOrigin: true,
       },

@@ -19,6 +19,8 @@ import { UsersPrimaryButtons } from '@/features/users/components/users-primary-b
 import { UsersProvider } from '@/features/users/components/users-provider'
 import { UsersTable } from '@/features/users/components/users-table'
 import { users } from '@/features/users/data/users'
+import { useClerkIntegration } from '@/hooks/use-clerk-integration'
+import { logger } from '@/shared'
 
 export const Route = createFileRoute('/clerk/_authenticated/user-management')({
   component: UserManagement,
@@ -30,8 +32,22 @@ function UserManagement() {
 
   const [opened, setOpened] = useState(true)
   const { isLoaded, isSignedIn } = useAuth()
+  
+  // Integrate with our database
+  const { userProfile, isLoading: profileLoading, error: profileError } = useClerkIntegration()
 
-  if (!isLoaded) {
+  // Log when user profile is loaded
+  useEffect(() => {
+    if (userProfile) {
+      logger.info('User profile loaded in Clerk integration', {
+        profileId: userProfile.id,
+        clerkUserId: userProfile.clerkUserId,
+        role: userProfile.role
+      })
+    }
+  }, [userProfile])
+
+  if (!isLoaded || profileLoading) {
     return (
       <div className='flex h-svh items-center justify-center'>
         <Loader2 className='size-8 animate-spin' />
@@ -41,6 +57,24 @@ function UserManagement() {
 
   if (!isSignedIn) {
     return <Unauthorized />
+  }
+
+  // Show error if profile creation failed
+  if (profileError) {
+    return (
+      <div className='flex h-svh items-center justify-center'>
+        <div className='text-center'>
+          <h2 className='text-xl font-bold text-red-600'>Profile Error</h2>
+          <p className='text-muted-foreground mt-2'>{profileError}</p>
+          <Button 
+            onClick={() => window.location.reload()} 
+            className='mt-4'
+          >
+            Retry
+          </Button>
+        </div>
+      </div>
+    )
   }
 
   return (
@@ -63,6 +97,11 @@ function UserManagement() {
                   <p className='text-muted-foreground'>
                     Manage your users and their roles here.
                   </p>
+                  {userProfile && (
+                    <p className='text-sm text-green-600'>
+                      • Connected as {userProfile.displayName || userProfile.email} ({userProfile.role})
+                    </p>
+                  )}
                   <LearnMore
                     open={opened}
                     onOpenChange={setOpened}

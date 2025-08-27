@@ -1,0 +1,149 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+model UserProfile {
+  id           String   @id @default(cuid())
+  clerkUserId  String   @unique
+  displayName  String?
+  role         String   @default("USER")
+  avatar       String?
+  email        String?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  // Relations
+  sessions    Session[]
+  activities  Activity[]
+  settings    UserSettings?
+  memberships UserTenantMembership[]
+
+  @@map("user_profiles")
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  userId       String
+  token        String   @unique
+  expiresAt    DateTime
+  createdAt    DateTime @default(now())
+  lastActivity DateTime @default(now())
+
+  user UserProfile @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("sessions")
+}
+
+model UserSettings {
+  id                String   @id @default(cuid())
+  userId            String   @unique
+  theme             String   @default("system")
+  language          String   @default("en")
+  notifications     Json     @default("{}")
+  preferences       Json     @default("{}")
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  user UserProfile @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("user_settings")
+}
+
+model Activity {
+  id          String       @id @default(cuid())
+  userId      String
+  type        ActivityType
+  description String
+  metadata    Json?
+  createdAt   DateTime     @default(now())
+
+  user UserProfile @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("activities")
+}
+
+model Tenant {
+  id        String   @id @default(cuid())
+  name      String
+  slug      String   @unique
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  memberships UserTenantMembership[]
+  entities    Entity[]
+  relations   Relation[]
+
+  @@map("tenants")
+}
+
+model UserTenantMembership {
+  id       String   @id @default(cuid())
+  userId   String
+  tenantId String
+  role     String   @default("MEMBER") // OWNER, ADMIN, MEMBER
+
+  user   UserProfile @relation(fields: [userId], references: [id], onDelete: Cascade)
+  tenant Tenant     @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, tenantId])
+  @@map("user_tenant_memberships")
+}
+
+model Entity {
+  id       String   @id @default(cuid())
+  tenantId String
+  kind     String   // Type of entity
+  name     String
+  slug     String
+  data     Json?    // Flexible data storage
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  tenant   Tenant     @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  fromRelations Relation[] @relation("EntityFrom")
+  toRelations   Relation[] @relation("EntityTo")
+
+  @@unique([tenantId, slug])
+  @@map("entities")
+}
+
+model Relation {
+  id       String   @id @default(cuid())
+  tenantId String
+  fromId   String
+  toId     String
+  type     String   // Type of relation
+  data     Json?    // Additional relation data
+  createdAt DateTime @default(now())
+
+  tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  from   Entity @relation("EntityFrom", fields: [fromId], references: [id], onDelete: Cascade)
+  to     Entity @relation("EntityTo", fields: [toId], references: [id], onDelete: Cascade)
+
+  @@unique([tenantId, fromId, toId, type])
+  @@map("relations")
+}
+
+enum ActivityType {
+  LOGIN
+  LOGOUT
+  PROFILE_UPDATE
+  SETTINGS_UPDATE
+  ENTITY_CREATE
+  ENTITY_UPDATE
+  ENTITY_DELETE
+  RELATION_CREATE
+  RELATION_DELETE
+  TENANT_JOIN
+  TENANT_LEAVE
+}
