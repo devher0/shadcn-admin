@@ -1,0 +1,62 @@
+---
+alwaysApply: true
+---
+rules:
+  - id: logging-module
+    description: "Во всех сервисах используется общий модуль логирования с JSON-выводом"
+    pattern: "src/**"
+    actions:
+      - ensure_import:
+          path: "@/shared/logging"
+          alias: "logger"
+      - enforce_usage:
+          functions: ["logger.info", "logger.error", "logger.warn", "logger.debug", "logger.withContext"]
+      - enforce_format:
+          type: "json"
+          fields: [timestamp, level, service, message, context, traceId]
+      - ban: ["console.log", "console.error", "console.warn", "console.debug"]
+    examples:
+      good: |
+        logger.info("User created", { userId, traceId })
+      bad: |
+        console.log("User created", user)
+
+  - id: metrics-module
+    description: "Во всех сервисах используются общий модуль метрик (Prometheus) и http-инструментация"
+    pattern: "src/**"
+    actions:
+      - ensure_import:
+          path: "@/shared/metrics"
+          alias: "metrics"
+      - enforce_usage:
+          functions: ["metrics.counter", "metrics.gauge", "metrics.histogram", "metrics.observeHttp"]
+      - enforce_http_middleware:
+          frameworks: ["express", "fastify", "koa"]
+          middleware: "metrics.httpMiddleware"
+      - require_endpoint:
+          path: "/metrics"
+          via: "metrics.router"   # автоматически монтируемый роутер
+      - env_recommend:
+          vars: ["METRICS_ENABLED=true", "METRICS_ENDPOINT=/metrics"]
+
+  - id: health-checks
+    description: "Обязательные /healthz и /readyz эндпоинты, завязанные на общие проверки"
+    pattern: "src/**"
+    actions:
+      - ensure_import:
+          path: "@/shared/health"
+          alias: "health"
+      - require_endpoint:
+          path: "/healthz"
+          via: "health.router"
+      - require_endpoint:
+          path: "/readyz"
+          via: "health.router"
+      - enforce_registration_api:
+          functions: ["health.registerLiveness", "health.registerReadiness"]
+      - examples:
+          good: |
+            health.registerReadiness("db", async () => db.ping())
+            app.use("/readyz", health.router)
+          bad: |
+            app.get("/health", (_req,res)=>res.send("ok"))

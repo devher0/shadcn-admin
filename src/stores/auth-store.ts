@@ -1,5 +1,6 @@
 import { create } from 'zustand'
 import { getCookie, setCookie, removeCookie } from '@/lib/cookies'
+import { logger } from '@/shared'
 
 const ACCESS_TOKEN = 'thisisjustarandomstring'
 
@@ -28,11 +29,19 @@ export const useAuthStore = create<AuthState>()((set) => {
     auth: {
       user: null,
       setUser: (user) =>
-        set((state) => ({ ...state, auth: { ...state.auth, user } })),
+        set((state) => {
+          logger.info('User set in auth store', { 
+            userId: user?.accountNo, 
+            email: user?.email,
+            roles: user?.role 
+          })
+          return { ...state, auth: { ...state.auth, user } }
+        }),
       accessToken: initToken,
       setAccessToken: (accessToken) =>
         set((state) => {
           setCookie(ACCESS_TOKEN, JSON.stringify(accessToken))
+          logger.debug('Access token set', { hasToken: !!accessToken })
           return { ...state, auth: { ...state.auth, accessToken } }
         }),
       resetAccessToken: () =>
@@ -43,6 +52,7 @@ export const useAuthStore = create<AuthState>()((set) => {
       reset: () =>
         set((state) => {
           removeCookie(ACCESS_TOKEN)
+          logger.info('Auth store reset', { previousUser: state.auth.user?.accountNo })
           return {
             ...state,
             auth: { ...state.auth, user: null, accessToken: '' },
